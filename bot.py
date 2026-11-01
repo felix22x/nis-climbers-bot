@@ -181,19 +181,41 @@ async def handle_message(
         )
 
 
+
 def main():
     if not TOKEN:
-        print("Не найден токен. Проверь файл .env рядом с bot.py.")
-        return
+        raise RuntimeError(
+            "Не найден TELEGRAM_BOT_TOKEN в настройках Render."
+        )
 
-    asyncio.set_event_loop(asyncio.new_event_loop())
     app = Application.builder().token(TOKEN.strip()).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
     )
 
-    print("Запускаю бота. Для остановки нажми Ctrl+C.")
+    port = int(os.environ.get("PORT", "10000"))
+    render_url = os.environ.get("RENDER_EXTERNAL_URL")
+
+    if not render_url:
+        raise RuntimeError(
+            "Не найден RENDER_EXTERNAL_URL в настройках Render."
+        )
+
+    webhook_path = "telegram-webhook"
+
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=port,
+        url_path=webhook_path,
+        webhook_url=f"{render_url.rstrip('/')}/{webhook_path}",
+        drop_pending_updates=False,
+    )
+
+
+if __name__ == "__main__":
+    main()
+
     app.run_polling()
 
 
