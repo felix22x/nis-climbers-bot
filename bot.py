@@ -261,13 +261,37 @@ async def show_category_routes(update, context, category):
         reply_markup=keyboard,
     )
 
+async def show_socials(update, context):
+    keyboard = [
+        [InlineKeyboardButton(
+            "💬 WhatsApp",
+            url="https://chat.whatsapp.com/Gt5lEOMfrNYADWl6q4pnkg"
+        )],
+        [InlineKeyboardButton(
+            "📸 Instagram",
+            url="https://www.instagram.com/nis_climbers"
+        )],
+        [InlineKeyboardButton(
+            "🎵 TikTok",
+            url="https://www.tiktok.com/@nis_climbers"
+        )],
+    ]
+
+    await update.message.reply_text(
+        "🌐 Наши социальные сети:",
+        reply_markup=InlineKeyboardMarkup(keyboard),
+    )
+
 
 async def handle_message(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ):
     text = update.message.text.strip()
-
+if text == "🌐 Наши соцсети":
+    await show_socials(update, context)
+    return 
+    
     if text == "🏠 Главное меню":
         context.user_data.pop("category", None)
         await start(update, context)
