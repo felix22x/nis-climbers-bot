@@ -67,6 +67,25 @@ async def show_routes(update, context):
 
 
 async def send_track(update, name, route):
+    path = BASE_DIR / "routes" / route["file"]
+
+    if not path.is_file():
+        path = BASE_DIR / route["file"]
+
+    if not path.is_file():
+        await update.message.reply_text(
+            "Трек пока недоступен. Сообщи администратору клуба."
+        )
+        return
+
+    with path.open("rb") as track:
+        await update.message.reply_document(
+            document=track,
+            filename=route["file"],
+            caption=f"{name}\nGPX-трек от NIS Climbers.",
+        )
+
+
        path = BASE_DIR / "routes" / route["file"]
     if not path.is_file():
         path = BASE_DIR / route["file"]
