@@ -1,4 +1,3 @@
-import asyncio
 import os
 from pathlib import Path
 
@@ -94,14 +93,14 @@ ROUTES = {
 
 CATEGORIES = {
     "🟢 Лёгкие": [
-        "🏔 Малая Алматинская кругосветка",
+        "🏔Малая Алматинская кругосветка",
     ],
     "🟡 Средние": [
         "🏔 Пик 28 героев Панфиловцев",
-        "🏔 Пик Пила",
-        "🏔 Пик Скалистый",
-        "🏔 Титова траверс",
-        "🏔 Пик Молодежный",
+        "🏔Пик Пила",
+        "🏔Пик Скалистый",
+        "🏔Титова траверс",
+        "🏔Пик Молодежный",
         "🏔 Пик Карнизный через Проходное",
         "🏔 Пик Турист",
     ],
@@ -116,10 +115,7 @@ CATEGORIES = {
 
 
 HOME = ReplyKeyboardMarkup(
-    [
-        ["🥾 Маршруты"],
-        ["🌐 Наши соцсети"],
-    ],
+    [[category] for category in CATEGORIES] + [["🌐 Наши соцсети"]],
     resize_keyboard=True,
 )
 
@@ -136,9 +132,10 @@ ROUTE_MENU = ReplyKeyboardMarkup(
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop("route", None)
+    context.user_data.pop("category", None)
     await update.message.reply_text(
-        "Привет! Я бот NIS Climbers 🏔\n"
-        "Открой маршруты, чтобы выбрать трек и посмотреть погоду.",
+        "🏔 Привет! Я бот NIS Climbers!\n"
+        "Выбери сложность маршрута или открой наши соцсети.",
         reply_markup=HOME,
     )
 
@@ -234,7 +231,7 @@ async def show_categories(update, context):
 
     keyboard = ReplyKeyboardMarkup(
         [[category] for category in CATEGORIES]
-        + [["🏠 Главное меню"]],
+        + [["🌐 Наши соцсети"]],
         resize_keyboard=True,
     )
 
@@ -288,9 +285,9 @@ async def handle_message(
     context: ContextTypes.DEFAULT_TYPE,
 ):
     text = update.message.text.strip()
-if text == "🌐 Наши соцсети":
-    await show_socials(update, context)
-    return 
+    if text == "🌐 Наши соцсети":
+        await show_socials(update, context)
+        return
     
     if text == "🏠 Главное меню":
         context.user_data.pop("category", None)
@@ -364,8 +361,6 @@ def main():
         raise RuntimeError(
             "Не найден RENDER_EXTERNAL_URL в настройках Render."
         )
-
-    asyncio.set_event_loop(asyncio.new_event_loop())
 
     app = Application.builder().token(TOKEN.strip()).build()
     app.add_handler(CommandHandler("start", start))
