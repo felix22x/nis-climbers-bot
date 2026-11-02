@@ -114,10 +114,15 @@ CATEGORIES = {
     ],
 }
 
+
 HOME = ReplyKeyboardMarkup(
-    [["🥾 Маршруты"]],
+    [
+        ["🥾 Маршруты"],
+        ["🌐 Наши соцсети"],
+    ],
     resize_keyboard=True,
 )
+
 
 ROUTE_MENU = ReplyKeyboardMarkup(
     [
