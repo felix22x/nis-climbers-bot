@@ -53,6 +53,38 @@ ROUTES = {
         "latitude": 43.149454,
         "longitude": 77.116494,
     },
+    
+    "🏔 Пик Валерия Хрищатого": {
+        "file": "pik_khrishchatogo.gpx",
+        "latitude": 43.08761,
+        "longitude": 77.09589,
+    },
+    "🏔 Пик Каргалинский — Пик Каменский": {
+        "file": "kargalinskiy_kamenskiy.gpx",
+        "latitude": 43.060703,
+        "longitude": 76.854761,
+    },
+    "🏔 Пик Карнизный через Проходное": {
+        "file": "karniznyy.gpx",
+        "latitude": 43.011832,
+        "longitude": 76.945988,
+    },
+    "🏔 Пик Молодая Гвардия": {
+        "file": "molodaya_gvardiya.gpx",
+        "latitude": 43.006825,
+        "longitude": 77.085311,
+    },
+    "🏔 Пик Турист": {
+        "file": "pik_turist.gpx",
+        "latitude": 43.028767,
+        "longitude": 76.952073,
+    },
+    "🏔 Пик Чкалова": {
+        "file": "pik_chkalova.gpx",
+        "latitude": 43.103611,
+        "longitude": 77.127500,
+    },
+
 }
 CATEGORIES = {
     "🟢 Лёгкие": [
