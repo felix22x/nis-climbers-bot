@@ -178,6 +178,40 @@ async def send_weather(update, name, route, day):
     await update.message.reply_text(message)
 
 
+async def show_categories(update, context):
+    context.user_data.pop("route", None)
+    context.user_data.pop("category", None)
+
+    keyboard = ReplyKeyboardMarkup(
+        [[category] for category in CATEGORIES]
+        + [["🏠 Главное меню"]],
+        resize_keyboard=True,
+    )
+
+    await update.message.reply_text(
+        "🥾 Выбери категорию маршрутов:\n\n"
+        "Категории заданы клубом. Снег, лёд и погода "
+        "могут существенно изменить сложность.",
+        reply_markup=keyboard,
+    )
+
+
+async def show_category_routes(update, context, category):
+    context.user_data["category"] = category
+    context.user_data.pop("route", None)
+
+    keyboard = ReplyKeyboardMarkup(
+        [[name] for name in CATEGORIES[category]]
+        + [["⬅️ К категориям"], ["🏠 Главное меню"]],
+        resize_keyboard=True,
+    )
+
+    await update.message.reply_text(
+        f"{category}\nВыбери маршрут:",
+        reply_markup=keyboard,
+    )
+
+
 async def handle_message(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
@@ -185,15 +219,35 @@ async def handle_message(
     text = update.message.text.strip()
 
     if text == "🏠 Главное меню":
+        context.user_data.pop("category", None)
         await start(update, context)
         return
 
-    if text in ("🥾 Маршруты", "⬅️ К маршрутам"):
-        await show_routes(update, context)
+    if text in ("🥾 Маршруты", "⬅️ К категориям"):
+        await show_categories(update, context)
+        return
+
+    if text in CATEGORIES:
+        await show_category_routes(update, context, text)
+        return
+
+    if text == "⬅️ К маршрутам":
+        category = context.user_data.get("category")
+
+        if category in CATEGORIES:
+            await show_category_routes(update, context, category)
+        else:
+            await show_categories(update, context)
         return
 
     if text in ROUTES:
         context.user_data["route"] = text
+
+        for category, names in CATEGORIES.items():
+            if text in names:
+                context.user_data["category"] = category
+                break
+
         await update.message.reply_text(
             f"{text}\n\nСкачать трек или посмотреть погоду?",
             reply_markup=ROUTE_MENU,
@@ -204,7 +258,7 @@ async def handle_message(
 
     if name not in ROUTES:
         await update.message.reply_text(
-            "Сначала открой маршруты и выбери нужный.",
+            "Открой маршруты и выбери категорию.",
             reply_markup=HOME,
         )
         return
