@@ -28,6 +28,11 @@ ROUTES = {
         "latitude": 43.079444,
         "longitude": 77.111944,
     },
+    "🏔 Пик Молодёжный": {
+        "file": "molodezhny.gpx",
+        "latitude": 43.054167,
+        "longitude": 77.059167,
+    },
 }
 
 HOME = ReplyKeyboardMarkup(
