@@ -17,7 +17,6 @@ BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
-# Здесь будем добавлять новые маршруты.
 ROUTES = {
     "🏔 Пик Памяти друзей": {
         "file": "pamyati_druzey.gpx",
@@ -30,6 +29,7 @@ ROUTES = {
         "longitude": 77.111944,
     },
 }
+
 HOME = ReplyKeyboardMarkup(
     [["🥾 Маршруты"]],
     resize_keyboard=True,
@@ -72,23 +72,6 @@ async def send_track(update, name, route):
     if not path.is_file():
         path = BASE_DIR / route["file"]
 
-    if not path.is_file():
-        await update.message.reply_text(
-            "Трек пока недоступен. Сообщи администратору клуба."
-        )
-        return
-
-    with path.open("rb") as track:
-        await update.message.reply_document(
-            document=track,
-            filename=route["file"],
-            caption=f"{name}\nGPX-трек от NIS Climbers.",
-        )
-
-
-       path = BASE_DIR / "routes" / route["file"]
-    if not path.is_file():
-        path = BASE_DIR / route["file"]
     if not path.is_file():
         await update.message.reply_text(
             "Трек пока недоступен. Сообщи администратору клуба."
@@ -179,6 +162,7 @@ async def handle_message(
         return
 
     name = context.user_data.get("route")
+
     if name not in ROUTES:
         await update.message.reply_text(
             "Сначала открой маршруты и выбери нужный.",
@@ -201,12 +185,20 @@ async def handle_message(
         )
 
 
-
 def main():
-    if not TOKEN:
+    if not TOKEN or not TOKEN.strip():
         raise RuntimeError(
             "Не найден TELEGRAM_BOT_TOKEN в настройках Render."
         )
+
+    render_url = os.environ.get("RENDER_EXTERNAL_URL")
+
+    if not render_url:
+        raise RuntimeError(
+            "Не найден RENDER_EXTERNAL_URL в настройках Render."
+        )
+
+    asyncio.set_event_loop(asyncio.new_event_loop())
 
     app = Application.builder().token(TOKEN.strip()).build()
     app.add_handler(CommandHandler("start", start))
@@ -215,13 +207,6 @@ def main():
     )
 
     port = int(os.environ.get("PORT", "10000"))
-    render_url = os.environ.get("RENDER_EXTERNAL_URL")
-
-    if not render_url:
-        raise RuntimeError(
-            "Не найден RENDER_EXTERNAL_URL в настройках Render."
-        )
-
     webhook_path = "telegram-webhook"
 
     app.run_webhook(
@@ -231,12 +216,6 @@ def main():
         webhook_url=f"{render_url.rstrip('/')}/{webhook_path}",
         drop_pending_updates=False,
     )
-
-
-if __name__ == "__main__":
-    main()
-
-    app.run_polling()
 
 
 if __name__ == "__main__":
