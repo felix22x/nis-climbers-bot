@@ -32,27 +32,27 @@ ROUTES = {
         "latitude": 43.079444,
         "longitude": 77.111944,
     },
-    "🏔Пик Молодежный": {
+    "🏔 Пик Молодежный": {
         "file": "molodezhny.gpx",
         "latitude": 43.054167,
         "longitude": 77.059167,
     },
-    "🏔Пик Пила": {
+    "🏔 Пик Пила": {
         "file": "pik-pila.gpx",
         "latitude": 43.025996,
         "longitude": 76.898009,
     },
-    "🏔Пик Скалистый": {
+    "🏔 Пик Скалистый": {
         "file": "Пик_Скалистый.gpx",
         "latitude": 43.0511,
         "longitude": 77.0062,
     },
-    "🏔Титова траверс": {
+    "🏔 Титова траверс": {
         "file": "Траверс_пиков_Малыш_Водолаз_Космонавт_Титова.gpx",
         "latitude": 43.075026,
         "longitude": 77.048696,
     },
-    "🏔Малая Алматинская кругосветка": {
+    "🏔 Малая Алматинская кругосветка": {
         "file": "Малая Алматинская кругосветка.gpx",
         "latitude": 43.149454,
         "longitude": 77.116494,
@@ -64,48 +64,48 @@ ROUTES = {
         "longitude": 77.09589,
     },
     "🏔 Пик Каргалинский — Пик Каменский": {
-        "file": "kargalinskiy_kamenskiy.gpx",
+        "file": "pik-kargalinskii-pik-kamenskii-cherez-kaskabas-spusk-cherez-.gpx",
         "latitude": 43.060703,
         "longitude": 76.854761,
     },
     "🏔 Пик Карнизный через Проходное": {
-        "file": "karniznyy.gpx",
+        "file": "t303665559_karnizny_peak_through_the_gorge_prohodnoe_пик.gpx",
         "latitude": 43.011832,
         "longitude": 76.945988,
     },
     "🏔 Пик Молодая Гвардия": {
-        "file": "molodaya_gvardiya.gpx",
+        "file": "2022_07_24_0843_Wikiloc_Трек_на_пик_Молодая_Гвардия_часть_2_.gpx",
         "latitude": 43.006825,
         "longitude": 77.085311,
     },
     "🏔 Пик Турист": {
-        "file": "pik_turist.gpx",
+        "file": "2025-07-06-1913 Космостанция-Пик Турист.gpx",
         "latitude": 43.028767,
         "longitude": 76.952073,
     },
     "🏔 Пик Чкалова": {
-        "file": "pik_chkalova.gpx",
+        "file": "Пик Чкалова с запада, 1А-1Б.gpx",
         "latitude": 43.103611,
         "longitude": 77.127500,
     },
 
     "🏔 Большой Алматинский пик": {
-        "file": "bolshoy_almatinskiy_pik.gpx",
+        "file": "БАП из Проходного.gpx",
         "latitude": 43.055000,
         "longitude": 76.934167,
     },
     "🏔 Пик Советов": {
-        "file": "pik_sovetov.gpx",
+        "file": "Пик Советов (3).gpx",
         "latitude": 43.023611,
         "longitude": 77.037222,
     },
     "🏔 Пик Антикайнен": {
-        "file": "pik_antikaynen.gpx",
+        "file": "Антикайнена_ 20-21 окт_ 2023 г_ 09_22_04.gpx",
         "latitude": 43.072712,
         "longitude": 77.111835,
     },
     "🏔 Пик Физкультурник": {
-        "file": "pik_fizkulturnik.gpx",
+        "file": "2023-07-14-1047 Пик Физкультурник.gpx",
         "latitude": 43.092588,
         "longitude": 77.115702,
     },
