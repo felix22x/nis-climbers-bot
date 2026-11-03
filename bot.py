@@ -66,7 +66,10 @@ CATEGORIES = {
     ],
 }
 
-HOME = ReplyKeyboardMarkup([['🏔 Маршруты'], ['🌐 Наши соцсети']], resize_keyboard=True)
+HOME = ReplyKeyboardMarkup(
+    [['🏔 Маршруты'], ['🌐 Наши соцсети'], ['🔴 Регистрация МЧС 🔴']],
+    resize_keyboard=True,
+)
 DIFFICULTY_MENU = ReplyKeyboardMarkup(
     [['🟢 Лёгкие'], ['🟡 Средние'], ['🔴 Сложные'], ['⬅️ Назад']],
     resize_keyboard=True,
@@ -324,6 +327,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     if message == '🌐 Наши соцсети':
         await show_socials(update)
+        return
+    if message == '🔴 Регистрация МЧС 🔴':
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton('🔴 Перейти к регистрации', url='https://www.almatyhike.kz/ru')]
+        ])
+        await update.message.reply_text(
+            'Регистрация перед походом:', reply_markup=keyboard
+        )
         return
     if message in ('⬅️ Назад', '🏠 Главное меню'):
         context.user_data.clear()
