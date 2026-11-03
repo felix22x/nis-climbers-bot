@@ -397,8 +397,11 @@ def main():
 
     port = int(os.environ.get("PORT", "10000"))
     webhook_path = "telegram-webhook"
-
-    app.run_webhook(
+   
+    print(f"Запускаю webhook на порту {port}", flush=True)
+  print(f"Webhook URL: {render_url.rstrip('/')}/{webhook_path}", flush=True)
+    
+app.run_webhook(
         listen="0.0.0.0",
         port=port,
         url_path=webhook_path,
