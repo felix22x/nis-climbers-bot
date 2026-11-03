@@ -469,7 +469,17 @@ def main():
     render_url = os.environ.get('RENDER_EXTERNAL_URL')
     if not render_url:
         raise RuntimeError('Не найден RENDER_EXTERNAL_URL в настройках Render.')
-    app = Application.builder().token(TOKEN.strip()).build()
+    app = (
+        Application.builder()
+        .token(TOKEN.strip())
+        .connect_timeout(30)
+        .read_timeout(30)
+        .write_timeout(30)
+        .pool_timeout(30)
+        .get_updates_connect_timeout(30)
+        .get_updates_read_timeout(30)
+        .build()
+    )
     app.add_handler(CommandHandler('start', start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     port = int(os.environ.get('PORT', '10000'))
@@ -481,8 +491,10 @@ def main():
         url_path=webhook_path,
         webhook_url=f"{render_url.rstrip('/')}/{webhook_path}",
         drop_pending_updates=False,
+        bootstrap_retries=10,
     )
 
 
 if __name__ == '__main__':
     main()
+    
