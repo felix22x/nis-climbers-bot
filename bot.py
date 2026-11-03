@@ -142,7 +142,10 @@ CATEGORIES = {
 
 
 HOME = ReplyKeyboardMarkup(
-    [[category] for category in CATEGORIES] + [["🌐 Наши соцсети"]],
+    [
+        ["🏔 Маршруты"],
+        ["🌐 Наши соцсети"],
+    ],
     resize_keyboard=True,
 )
 
