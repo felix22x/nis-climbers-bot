@@ -73,6 +73,7 @@ DIFFICULTY_MENU = ReplyKeyboardMarkup(
 )
 ROUTE_MENU = ReplyKeyboardMarkup(
     [['📥 Скачать GPX-трек'], ['🌤 Погода сегодня', '🌤 Погода завтра'],
+     ['📅 Погода на 5 дней'],
      ['⬅️ К списку маршрутов'], ['🏠 Главное меню']],
     resize_keyboard=True,
 )
@@ -188,6 +189,133 @@ async def send_weather(update: Update, context: ContextTypes.DEFAULT_TYPE, tomor
         await update.message.reply_text('❌ Не удалось получить погоду. Попробуй позже.')
 
 
+# Подробный прогноз: пять отдельных дней, данные Open-Meteo каждые 3 часа.
+WEATHER_DAY_PREFIX = '📅 Прогноз: '
+
+
+def clothing_advice(feels_like, wind, rain, snow):
+    """Примерный набор одежды для похода, не оценка безопасности выхода."""
+    if feels_like <= -15:
+        clothes = [
+            'тёплое термобельё', 'флис или утепляющий средний слой',
+            'тёплая пуховая куртка', 'ветро- и влагозащитный слой',
+            'утеплённые штаны', 'зимние горные ботинки',
+            'тёплые носки, шапка, бафф и варежки',
+        ]
+    elif feels_like <= -5:
+        clothes = [
+            'термобельё', 'флис', 'утеплённая куртка',
+            'ветрозащитный слой', 'тёплые штаны',
+            'подходящие горные ботинки, шапка и перчатки',
+        ]
+    elif feels_like <= 5:
+        clothes = [
+            'базовый слой', 'флис', 'куртка от ветра и осадков',
+            'длинные походные брюки', 'горные ботинки',
+            'шапка и перчатки в запас',
+        ]
+    elif feels_like <= 15:
+        clothes = [
+            'дышащая кофта или футболка', 'лёгкий флис',
+            'ветровка', 'походные брюки и обувь',
+        ]
+    else:
+        clothes = [
+            'дышащая одежда', 'лёгкие походные брюки',
+            'головной убор', 'ветровка на случай смены погоды',
+        ]
+    if rain or snow:
+        clothes.append('непромокаемая внешняя одежда')
+    if wind >= 30:
+        clothes.append('надёжная защита лица и рук от ветра')
+    return '🧥 Что надеть:\n• ' + '\n• '.join(dict.fromkeys(clothes))
+
+
+async def show_five_day_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if context.user_data.get('route') not in ROUTES:
+        await update.message.reply_text('Сначала выбери маршрут.')
+        return
+    today = datetime.now(ZoneInfo('Asia/Almaty')).date()
+    dates = [(today + timedelta(days=i)).isoformat() for i in range(5)]
+    context.user_data['weather_dates'] = dates
+    keyboard = ReplyKeyboardMarkup(
+        [[WEATHER_DAY_PREFIX + day] for day in dates]
+        + [['⬅️ К маршруту'], ['🏠 Главное меню']],
+        resize_keyboard=True,
+    )
+    await update.message.reply_text(
+        '🌤 Выбери день для подробного прогноза на 3-часовых интервалах:',
+        reply_markup=keyboard,
+    )
+
+
+async def send_detailed_weather(update: Update, context: ContextTypes.DEFAULT_TYPE, day: str):
+    route_name = context.user_data.get('route')
+    if route_name not in ROUTES or day not in context.user_data.get('weather_dates', []):
+        await update.message.reply_text('Сначала выбери маршрут и день прогноза.')
+        return
+    route = ROUTES[route_name]
+    params = {
+        'latitude': route['latitude'],
+        'longitude': route['longitude'],
+        'hourly': 'temperature_2m,apparent_temperature,precipitation_probability,precipitation,wind_speed_10m,weather_code',
+        'timezone': 'Asia/Almaty',
+        'start_date': day,
+        'end_date': day,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            response = await client.get('https://api.open-meteo.com/v1/forecast', params=params)
+            response.raise_for_status()
+            hourly = response.json()['hourly']
+
+        entries = []
+        for i, timestamp in enumerate(hourly['time']):
+            hour = int(timestamp[11:13])
+            if hour % 3 != 0:
+                continue
+            temp = hourly['temperature_2m'][i]
+            feels = hourly['apparent_temperature'][i]
+            wind = hourly['wind_speed_10m'][i]
+            probability = hourly['precipitation_probability'][i]
+            amount = hourly['precipitation'][i]
+            code = hourly['weather_code'][i]
+            if any(v is None for v in (temp, feels, wind, probability, amount, code)):
+                continue
+            entries.append((hour, temp, feels, wind, probability, amount, code))
+
+        if not entries:
+            await update.message.reply_text('Нет данных для выбранного дня.')
+            return
+
+        lines = [f'🏔 {route_name}', f'📅 {day} (время Алматы)', '',
+                 'Температура каждые 3 часа:']
+        for hour, temp, feels, wind, probability, amount, code in entries:
+            lines.append(
+                f'{hour:02d}:00  {weather_description(code)} | {temp:+.0f}°C '
+                f'(ощущ. {feels:+.0f}°C)\n'
+                f'   💨 {wind:.0f} км/ч | 💧 {probability:.0f}% ({amount:.1f} мм)'
+            )
+
+        # Берём самый холодный по ощущению период и наибольший ветер,
+        # чтобы рекомендации не ориентировались только на дневной максимум.
+        coldest = min(item[2] for item in entries)
+        strongest_wind = max(item[3] for item in entries)
+        wet = any(item[5] > 0 or item[4] >= 60 for item in entries)
+        snow = any(item[6] in (71, 73, 75, 77, 85, 86) for item in entries)
+        lines.extend(['', clothing_advice(coldest, strongest_wind, wet, snow)])
+        if coldest <= -15 or strongest_wind >= 40:
+            lines.append('\n⚠️ Сильный холод или ветер: лучше пересмотреть выход и проверить предупреждения.')
+        lines.append(
+            '\n⚠️ Это модельный прогноз для координат вершины, а не гарантия условий '
+            'на тропе. В высокогорье погода меняется быстро; проверяй '
+            'официальные предупреждения, состояние маршрута и экипировку.'
+        )
+        await update.message.reply_text('\n'.join(lines))
+    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
+        await update.message.reply_text('❌ Не удалось получить подробный прогноз. Попробуй позже.')
+
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = (update.message.text or '').strip()
     if message == '🏔 Маршруты':
@@ -222,6 +350,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await show_route(update, context, message)
         else:
             await update.message.reply_text('Сначала выбери категорию маршрутов.')
+        return
+    if message == '📅 Погода на 5 дней':
+        await show_five_day_menu(update, context)
+        return
+    if message.startswith(WEATHER_DAY_PREFIX):
+        await send_detailed_weather(update, context, message[len(WEATHER_DAY_PREFIX):])
+        return
+    if message == '⬅️ К маршруту':
+        route_name = context.user_data.get('route')
+        if route_name in ROUTES:
+            await show_route(update, context, route_name)
+        else:
+            await show_categories(update)
         return
     if message == '📥 Скачать GPX-трек':
         await send_track(update, context)
